@@ -125,6 +125,9 @@ case "$1" in
     ;;
   --contents)
     printf '%s\n' '-rwxr-xr-x root/root 1 ./usr/bin/chatgpt' '-rwxr-xr-x root/root 1 ./usr/lib/chatgpt/codex-launcher'
+    for ((i = 0; i < 10000; i++)); do
+      printf -- '-rw-r--r-- root/root 1 ./usr/lib/chatgpt/fixture-%05d\n' "$i"
+    done
     ;;
   --control)
     mkdir -p "$3"
@@ -150,6 +153,9 @@ if [[ "$1" == '-qp' && "$2" == '--queryformat' ]]; then
   printf 'chatgpt\t26.803.81509\t1\t%s\thttps://developers.openai.com/codex/app\tChatGPT by OpenAI\topenai.com\tRSA/SHA512, fixture, Key ID 4a3b4a566c4660e4' "$arch"
 elif [[ "$1" == '-qpl' ]]; then
   printf '%s\n' '/usr/bin/chatgpt' '/usr/lib/chatgpt/codex-launcher'
+  for ((i = 0; i < 10000; i++)); do
+    printf '/usr/lib/chatgpt/fixture-%05d\n' "$i"
+  done
 elif [[ "$1" == '-qp' && "$2" == '--scripts' ]]; then
   printf "SIGNING_KEY_BASE64='%s'\n" "${FIXTURE_KEY_B64:?}"
 else

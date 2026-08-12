@@ -118,8 +118,16 @@ while IFS=$'\t' read -r logical_arch format file_name expected_arch expected_sha
       echo "Debian package identity mismatch for $file_name: $package_name $version $package_arch" >&2
       exit 1
     }
-    dpkg-deb --contents "$file" | awk '{print $NF}' | grep -Eq '^\.?/usr/bin/chatgpt$'
-    dpkg-deb --contents "$file" | awk '{print $NF}' | grep -Eq '^\.?/usr/lib/chatgpt/codex-launcher$'
+    deb_file_list="$tmp_dir/deb-files-$logical_arch.txt"
+    dpkg-deb --contents "$file" | awk '{print $NF}' > "$deb_file_list"
+    grep -Eq '^\.?/usr/bin/chatgpt$' "$deb_file_list" || {
+      echo "Debian package is missing /usr/bin/chatgpt: $file_name" >&2
+      exit 1
+    }
+    grep -Eq '^\.?/usr/lib/chatgpt/codex-launcher$' "$deb_file_list" || {
+      echo "Debian package is missing /usr/lib/chatgpt/codex-launcher: $file_name" >&2
+      exit 1
+    }
     control_dir="$tmp_dir/control-$logical_arch"
     mkdir -p "$control_dir"
     dpkg-deb --control "$file" "$control_dir"
@@ -164,8 +172,16 @@ while IFS=$'\t' read -r logical_arch format file_name expected_arch expected_sha
       echo "RPM package signing key ID mismatch for $file_name: $signature" >&2
       exit 1
     }
-    rpm -qpl "$file" | grep -Fxq '/usr/bin/chatgpt'
-    rpm -qpl "$file" | grep -Fxq '/usr/lib/chatgpt/codex-launcher'
+    rpm_file_list="$tmp_dir/rpm-files-$logical_arch.txt"
+    rpm -qpl "$file" > "$rpm_file_list"
+    grep -Fxq '/usr/bin/chatgpt' "$rpm_file_list" || {
+      echo "RPM package is missing /usr/bin/chatgpt: $file_name" >&2
+      exit 1
+    }
+    grep -Fxq '/usr/lib/chatgpt/codex-launcher' "$rpm_file_list" || {
+      echo "RPM package is missing /usr/lib/chatgpt/codex-launcher: $file_name" >&2
+      exit 1
+    }
     embedded_key_b64="$(rpm -qp --scripts "$file" | sed -n "s/^SIGNING_KEY_BASE64='\(.*\)'$/\1/p" | head -n 1)"
     verify_embedded_key "$embedded_key_b64" "RPM $logical_arch" "rpm-$logical_arch"
     signature_output="$(rpmkeys --dbpath "$tmp_dir/rpmdb" --checksig "$file")"
