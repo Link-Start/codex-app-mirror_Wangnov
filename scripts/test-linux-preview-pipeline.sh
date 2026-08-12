@@ -124,9 +124,11 @@ case "$1" in
     esac
     ;;
   --contents)
-    printf '%s\n' '-rwxr-xr-x root/root 1 ./usr/bin/chatgpt' '-rwxr-xr-x root/root 1 ./usr/lib/chatgpt/codex-launcher'
+    printf '%s\n' \
+      'lrwxrwxrwx root/root 0 2026-08-10 23:37 ./usr/bin/chatgpt -> ../lib/chatgpt/codex-launcher' \
+      '-rwxr-xr-x root/root 63 2026-08-10 23:37 ./usr/lib/chatgpt/codex-launcher'
     for ((i = 0; i < 10000; i++)); do
-      printf -- '-rw-r--r-- root/root 1 ./usr/lib/chatgpt/fixture-%05d\n' "$i"
+      printf -- '-rw-r--r-- root/root 1 2026-08-10 23:37 ./usr/lib/chatgpt/fixture-%05d\n' "$i"
     done
     ;;
   --control)

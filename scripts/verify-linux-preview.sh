@@ -119,7 +119,9 @@ while IFS=$'\t' read -r logical_arch format file_name expected_arch expected_sha
       exit 1
     }
     deb_file_list="$tmp_dir/deb-files-$logical_arch.txt"
-    dpkg-deb --contents "$file" | awk '{print $NF}' > "$deb_file_list"
+    # dpkg-deb renders symlinks as "path -> target". The package path is the
+    # sixth field, not the final field, for both regular files and symlinks.
+    dpkg-deb --contents "$file" | awk '{print $6}' > "$deb_file_list"
     grep -Eq '^\.?/usr/bin/chatgpt$' "$deb_file_list" || {
       echo "Debian package is missing /usr/bin/chatgpt: $file_name" >&2
       exit 1
